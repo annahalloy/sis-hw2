@@ -1,0 +1,252 @@
+#VRML_SIM R2019a utf8
+WorldInfo {
+  info [
+    "The model of the E-puck robot"
+  ]
+  title "E-puck simulation, SIS course project"
+}
+Viewpoint {
+  orientation 0.5723456005000793 -0.8095642763162895 -0.1304844668942857 5.577858532300539
+  position 2.286514337226223 2.3974331592016975 4.371987294302799
+}
+Background {
+  skyColor [
+    0.4 0.7 1
+  ]
+}
+PointLight {
+  ambientIntensity 1
+  intensity 0.6
+  location 0.14 0.6 -0.55
+  castShadows TRUE
+}
+PointLight {
+  ambientIntensity 1
+  intensity 0.6
+  location -0.43 0.6 0.5
+}
+SolidBox {
+  translation 0.125 0.05 0
+  name "box0"
+  size 0.25 0.1 0.01
+}
+SolidBox {
+  translation 0.375 0.05 0.5
+  name "box2"
+  size 0.25 0.1 0.01
+  appearance Appearance {
+    texture ImageTexture {
+      url [
+        "RoadSign_black_normal.png"
+      ]
+    }
+  }
+}
+SolidBox {
+  translation -0.125 0.05 0.5
+  name "box4"
+  size 0.25 0.1 0.01
+  appearance Appearance {
+    texture ImageTexture {
+      url [
+        "RoadSign_black_normal.png"
+      ]
+    }
+  }
+}
+SolidBox {
+  translation -1.125 0.05 0.25
+  name "box5"
+  size 0.25 0.1 0.01
+}
+SolidBox {
+  translation -0.875 0.05 0.25
+  name "box6"
+  size 0.25 0.1 0.01
+  appearance Appearance {
+    texture ImageTexture {
+      url [
+        "RoadSign_stripes_normal.png"
+      ]
+    }
+  }
+}
+SolidBox {
+  translation -0.375 0.05 0
+  rotation 0 0 1 1.57
+  name "box7"
+  size 0.1 0.25 0.01
+  appearance Appearance {
+    texture ImageTexture {
+      url [
+        "RoadSign_stripes_normal.png"
+      ]
+    }
+  }
+}
+SolidBox {
+  translation -0.125 0.05 -0.25
+  rotation 0 0 1 1.57
+  name "box8"
+  size 0.1 0.25 0.01
+  appearance Appearance {
+    texture ImageTexture {
+      url [
+        "RoadSign_stripes_normal.png"
+      ]
+    }
+  }
+}
+SolidBox {
+  translation -0.625 0.05 0.25
+  name "box9"
+  size 0.25 0.1 0.01
+}
+SolidBox {
+  translation -1.125 0.05 0
+  name "box10"
+  size 0.25 0.1 0.01
+}
+SolidBox {
+  translation -0.625 0.05 0
+  name "box11"
+  size 0.25 0.1 0.01
+}
+SolidBox {
+  translation -0.5 0.05 -0.25
+  name "box12"
+  size 0.5 0.1 0.01
+}
+SolidBox {
+  translation 0.125 0.05 -0.25
+  name "box13"
+  size 0.25 0.1 0.01
+}
+SolidBox {
+  translation -1.25 0.05 0.125
+  name "box14"
+  size 0.01 0.1 0.25
+  appearance Appearance {
+    texture ImageTexture {
+      url [
+        "RoadSign_black_normal.png"
+      ]
+    }
+  }
+}
+SolidBox {
+  translation -0.75 0.05 -0.125
+  name "box15"
+  size 0.01 0.1 0.25
+  appearance Appearance {
+    texture ImageTexture {
+      url [
+        "RoadSign_black_normal.png"
+      ]
+    }
+  }
+}
+SolidBox {
+  translation -1 0.05 -0.125
+  name "box16"
+  size 0.01 0.1 0.25
+}
+SolidBox {
+  translation -0.5 0.05 0.375
+  name "box17"
+  size 0.01 0.1 0.25
+}
+SolidBox {
+  translation -0.25 0.05 0.375
+  name "box18"
+  size 0.01 0.1 0.25
+}
+SolidBox {
+  translation 0 0.05 0.375
+  name "box19"
+  size 0.01 0.1 0.25
+}
+SolidBox {
+  translation 0 0.05 0.125
+  name "box20"
+  size 0.01 0.1 0.25
+  appearance Appearance {
+    texture ImageTexture {
+      url [
+        "RoadSign_stripes_normal.png"
+      ]
+    }
+  }
+}
+SolidBox {
+  translation 0.5 0.05 -0.125
+  name "box21"
+  size 0.01 0.1 0.25
+  appearance Appearance {
+    texture ImageTexture {
+      url [
+        "RoadSign_stripes_normal.png"
+      ]
+    }
+  }
+}
+SolidBox {
+  translation 0.25 0.05 0.25
+  name "box22"
+  size 0.01 0.1 0.5
+}
+SolidBox {
+  translation 0.25 0.05 -0.5
+  name "box23"
+  size 0.01 0.1 0.5
+}
+SolidBox {
+  translation 0.5 0.05 0.25
+  name "box24"
+  size 0.01 0.1 0.5
+}
+SolidBox {
+  translation 0.5 0.05 -0.5
+  name "box25"
+  size 0.01 0.1 0.5
+}
+RectangleArena {
+  name "box26"
+  floorSize 3 2.5
+}
+SolidBox {
+  translation 1.25 0.05 0.5
+  rotation 1 0 0 1.57
+  name "box27"
+  size 0.1 0.1 0.1
+  appearance Appearance {
+    texture ImageTexture {
+      url [
+        "RoadSign_stripes_noisy.png"
+      ]
+    }
+  }
+}
+SolidBox {
+  translation 1.25 0.05 0
+  rotation 1 0 0 0
+  name "box28"
+  size 0.1 0.1 0.1
+  appearance Appearance {
+    texture ImageTexture {
+      url [
+        "RoadSign_stripes_normal.png"
+      ]
+    }
+  }
+}
+DEF e-puck E-puck {
+  translation -0.875 0 -0.25
+  rotation 0 1 0 3.1415
+  controller "e-puck_controller"
+  window ""
+}
+Robot {
+  controller "e-puck_supervisor"
+  supervisor TRUE
+}

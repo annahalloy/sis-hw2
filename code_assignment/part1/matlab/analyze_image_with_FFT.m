@@ -10,7 +10,7 @@ close all
 image_name = 'images/example_image.jpg';
 
 % Read the image using imread
-data = ...
+data = imread(image_name);
 % Convert into gray image
 pic = ...
 % display image using imshow

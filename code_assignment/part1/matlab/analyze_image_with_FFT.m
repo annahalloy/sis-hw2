@@ -77,17 +77,18 @@ disp("peaks in cols fft: " +dh2)
 
 delta = dh2 - dh1;
 
-switch delta
-    case 0
-        disp('black')
-        black = 1;
-    case 2
-        disp("Horizontal stripped")
-        horizontal = 1;
-    case 3
-        disp("Vertical stripped")
-        vertical = 1;
-end;
+if delta==0
+    disp('black')
+    black = 1;
+end
+if delta>0
+   disp("Horizontal stripes")
+   horizontal = 1;
+end
+if delta<0
+   disp("Vertical stripes")
+   vertical = 1;
+end
 
 
 %% Plots

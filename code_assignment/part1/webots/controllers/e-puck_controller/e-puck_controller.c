@@ -187,12 +187,34 @@ void goForwardBehavior(){
   /* Modify here: go forward */
   while(wb_robot_step(TIME_STEP) != -1){
     // Based on above computation, compute the wheel speeds and make the robot move.
-    double left_speed = 0;
-    double right_speed = 0;
+    
+    double left_speed = MAX_SPEED_WB/10;
+    double right_speed = MAX_SPEED_WB/10;
+    
+    
     // Tip: You need to make sure that the wheel speeds do not exceed MAX_SPEED_WB
     wb_motor_set_velocity(left_motor, left_speed);
     wb_motor_set_velocity(right_motor, right_speed);
     /* Modify here: decide when to stop going forward and return to main loop*/
+    
+    //Noticing an obstacle -> robot needs to take a picture and analyse it
+    
+    bool wall_detected = false;
+	//double distance = 0;
+	//int i,j;
+	
+	/// TODO: Implement detection of front wall
+	if(ps[0] > 1000 || ps[7] > 1000 ){
+		wall_detected = true;
+	}
+	
+	if (!wall_detected){ // if no wall is detected we cannot update our position
+		return;
+	}
+	
+	if(wall_detected) {
+	takeImageBehavior() ;
+	}
 
   }
 } 
@@ -265,27 +287,27 @@ int main(int argc, char **argv){
     switch(nextBehavior){
       case goForward:
         goForwardBehavior();
-        //nextBehavior = ...
+        nextBehavior = takePicture ;
         break;
 
       case goBackwards:
         goBackwardsBehavior();
-        //nextBehavior = ...
+        nextBehavior = turnRight ;
         break;
 
       case turnLeft:
         turnLeftBehavior();
-        //nextBehavior = ...
+        nextBehavior = goForward ;
         break;
 
       case turnRight:
         turnRightBehavior();
-        //nextBehavior = ...
+        nextBehavior = goForward ;
         break;
 
       case takePicture:
         takeImageBehavior();
-        //nextBehavior = ...
+        nextBehavior = analyzePicture; ///
         break;
 
       case analyzePicture: ; // ';' is necessary in a switch case if you follow case by a declaration
@@ -293,16 +315,16 @@ int main(int argc, char **argv){
         res = analyzePictureBehavior();
         switch(res){
           case left:
-            //nextBehavior = ...
+            nextBehavior = turnLeft;
             break;
           case right:
-            //nextBehavior = ...
+            nextBehavior = turnRight;
             break;
           case back:
-            //nextBehavior = ...
+            nextBehavior = goBackwards;
             break;
           case unclear:
-            //nextBehavior = ...
+            nextBehavior = takePicture;
             break;
         }
         break;
@@ -310,7 +332,7 @@ int main(int argc, char **argv){
       case turnAround:
         turnLeftBehavior();
         turnLeftBehavior();
-        //nextBehavior = ...
+        nextBehavior = goForward ; 
         break;
 
       default:

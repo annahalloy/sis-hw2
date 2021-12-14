@@ -92,11 +92,21 @@ void print_camera_gray_image() {
 
 /* read the distance sensors */
 void get_sensor_input() {
-  int i;
+  //int i;
 
   /* Modify here: get distance sensor values and store them in the distance_sensors_values array */
+  double distance_sensors_value[NB_SENSORS];
+  
+  for (int i=0; i<NB_SENSORS; i++) {
+  distance_sensors_values[i] = ps[i];
+  
+  
+  }
+  
   /* Optional (if needed for your algorithm): add filtering to avoid noise */
-
+  
+  
+  
 }
 
 void takeImageBehavior() {
@@ -163,8 +173,14 @@ enum analysisResult analyzePictureBehavior(){
 
 
     /* Modify here: do some fft preparation magic here */
-
-
+   
+   for (n = 0; n=1; n++) {
+    for (m=0;m<CAMERA_WIDTH;m++) {
+      cx_in_col[m].r = signal_data[n][m];
+      cx_in_row[m].r = signal_data[n][m];
+    }
+    
+    }
 
     /* Modify here: perform the fft using kiss_fft() and free() as in example above*/
 
@@ -174,6 +190,10 @@ enum analysisResult analyzePictureBehavior(){
     
 
     
+    decision = left;
+    decision = right;
+    decision = back;
+    decision = unclear;
     /* Modify here: decide on your strategy and the direction to turn*/
     enum analysisResult decision;
     
@@ -197,7 +217,7 @@ void goForwardBehavior(){
     wb_motor_set_velocity(right_motor, right_speed);
     /* Modify here: decide when to stop going forward and return to main loop*/
     
-    //Noticing an obstacle -> robot needs to take a picture and analyse it
+    //////Noticing an obstacle -> robot needs to take a picture and analyse it
     
     bool wall_detected = false;
 	//double distance = 0;
@@ -205,16 +225,13 @@ void goForwardBehavior(){
 	
 	/// TODO: Implement detection of front wall
 	if(ps[0] > 1000 || ps[7] > 1000 ){
-		wall_detected = true;
-	}
+		wall_detected = true;}
 	
 	if (!wall_detected){ // if no wall is detected we cannot update our position
-		return;
-	}
+		return;}
 	
 	if(wall_detected) {
-	takeImageBehavior() ;
-	}
+	takeImageBehavior() ;}
 
   }
 } 
@@ -224,13 +241,16 @@ void goBackwardsBehavior(){
   /* Modify here: go backwards */
   while(wb_robot_step(TIME_STEP) != -1){
      // Based on above computation, compute the wheel speeds and make the robot move.
-    double left_speed = 0;
-    double right_speed = 0;
+    double left_speed = - MAX_SPEED_WB/10;
+    double right_speed = - MAX_SPEED_WB/10;
      // Tip: You need to make sure that the wheel speeds do not exceed MAX_SPEED_WB
      wb_motor_set_velocity(left_motor, left_speed);
      wb_motor_set_velocity(right_motor, right_speed);
 
   /* Modify here: decide when to stop going backwards and return to main loop */
+  
+  
+  
 
   }
 }

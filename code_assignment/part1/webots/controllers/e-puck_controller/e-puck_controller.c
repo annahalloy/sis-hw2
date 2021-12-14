@@ -99,13 +99,9 @@ void get_sensor_input() {
   
   for (int i=0; i<NB_SENSORS; i++) {
   distance_sensors_values[i] = ps[i];
-  
-  
   }
   
   /* Optional (if needed for your algorithm): add filtering to avoid noise */
-  
-  
   
 }
 
@@ -146,6 +142,8 @@ enum analysisResult analyzePictureBehavior(){
     }
     // run fft
     kiss_fft( cfg , cx_in_example , cx_out_example ); 
+    
+    
 
     // Example on how to write the result to a file
     FILE *fp;
@@ -161,6 +159,8 @@ enum analysisResult analyzePictureBehavior(){
     /* Modify here: calculate average of signal (image) */
     long int sum=0;
     double mean=0;
+    
+    
 
 
     /* prepare the signal variables */
@@ -179,13 +179,26 @@ enum analysisResult analyzePictureBehavior(){
       cx_in_col[m].r = signal_data[n][m];
       cx_in_row[m].r = signal_data[n][m];
     }
-    
     }
 
     /* Modify here: perform the fft using kiss_fft() and free() as in example above*/
 
-
-
+    kiss_fft( cfg , cx_in_col , cx_out_col ); 
+    double F_mag_col[SIGNAL_LENGTH] ;
+    for (m=0;m<CAMERA_WIDTH;m++) {
+    F_mag_col[m] = cx_out_col[m].r*cx_out_col[m].r + cx_out_col[m].i*cx_out_col[m].i;
+    }
+    
+    free(cfg);
+    
+    kiss_fft( cfg , cx_in_row , cx_out_row ); 
+    double F_mag_row[SIGNAL_LENGTH] ;
+    for (m=0;m<CAMERA_WIDTH;m++) {
+    F_mag_row[m] = cx_out_row[m].r*cx_out_row[m].r + cx_out_row[m].i*cx_out_row[m].i;
+    }
+    
+    free(cfg);
+    
     /* Modify here: decide on your strategy and the direction to turn*/
     
 

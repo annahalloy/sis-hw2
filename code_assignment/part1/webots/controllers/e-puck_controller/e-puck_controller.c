@@ -92,33 +92,18 @@ void print_camera_gray_image() {
 
 /* read the distance sensors */
 void get_sensor_input() {
-  //int i;
-
-  /* Modify here: get distance sensor values and store them in the distance_sensors_values array */
-  double distance_sensors_value[NB_SENSORS];
-  
   for (int i=0; i<NB_SENSORS; i++) {
-  distance_sensors_values[i] = ps[i];
+  distance_sensors_values[i] = wb_distance_sensor_get_value(ps[i]);
   }
-  
+  /* Modify here: get distance sensor values and store them in the distance_sensors_values array */
   /* Optional (if needed for your algorithm): add filtering to avoid noise */
-  
 }
 
-void takeImageBehavior() {
-  printf("Running behavior: takeImageBehavior\n");
-   /* captures an image and stores it in 'signal_data'*/
-  const unsigned char* im = wb_camera_get_image(camera);
-  for (int m=0;m<CAMERA_WIDTH;m++) {
-    for (int n=0;n<CAMERA_HEIGHT;n++) {
-      signal_data[n][m]= wb_camera_image_get_grey(im,CAMERA_WIDTH,m,n); // convert from color to grey scale
-    }
-  }
-}
+
 
 
 enum analysisResult analyzePictureBehavior(){
-  printf("Running behavior: analyzePictureBehavior\n");
+  printf("Runninsignal_data[n][m] = g behavior: analyzePictureBehavior\n");
 
      /* fft variables */  
     kiss_fft_cfg cfg = kiss_fft_alloc( SIGNAL_LENGTH ,0 ,NULL, NULL );  
@@ -141,15 +126,14 @@ enum analysisResult analyzePictureBehavior(){
       cx_in_example[m].r = signal_data[n][m];
     }
     // run fft
+   
     kiss_fft( cfg , cx_in_example , cx_out_example ); 
-    
-    
-
+    printf("cx in ex %d, cx out ex %d \n", cx_in_example[m].r, cx_out_example[m].r);
     // Example on how to write the result to a file
     FILE *fp;
     fp =fopen("fft_wb.txt","w+");
     for(m = 0; m < SIGNAL_LENGTH ; m++) { 
-        fprintf(fp,"%d,%f,%f \n",m,cx_out_example[m].r);
+        fprintf(fp,"%d,%f \n",m,cx_out_example[m].r);
     }  
     fclose(fp);
 
@@ -162,7 +146,6 @@ enum analysisResult analyzePictureBehavior(){
     
     
 
-
     /* prepare the signal variables */
     for (m=0;m<SIGNAL_LENGTH;m++) {
       cx_in_col[m].r = 0.;
@@ -173,81 +156,140 @@ enum analysisResult analyzePictureBehavior(){
 
 
     /* Modify here: do some fft preparation magic here */
+
+    
+    print_camera_gray_image();
+    
+         
+    for (int m=0;m<CAMERA_WIDTH;m++) {
+          cx_in_row[m].r = signal_data[8][m];
+          printf("m %d row.r %d, row.i %d, data %d \n",m, cx_in_row[m].r, cx_in_row[m].i, signal_data[8][m]);
+    }
+          
+    for (int n=0; n<CAMERA_HEIGHT; n++) {
+        cx_in_col[n].r = signal_data[n][8]; 
+        printf("m %d col.r %d, col.i %d, data %d\n",n, cx_in_col[m].r ,cx_in_col[m].i, signal_data[8][m]);
+    }
    
-   for (n = 0; n=1; n++) {
-    for (m=0;m<CAMERA_WIDTH;m++) {
-      cx_in_col[m].r = signal_data[n][m];
-      cx_in_row[m].r = signal_data[n][m];
-    }
-    }
-
+    
+    
     /* Modify here: perform the fft using kiss_fft() and free() as in example above*/
-
-    kiss_fft( cfg , cx_in_col , cx_out_col ); 
-    double F_mag_col[SIGNAL_LENGTH] ;
+          
+    kiss_fft_cfg cfg2 = kiss_fft_alloc( CAMERA_WIDTH ,0 ,NULL, NULL );  
+    
+    kiss_fft( cfg2 , cx_in_col , cx_out_col ); 
+    //printf("kiss\n");
+    
+    double F_mag_col[CAMERA_WIDTH] ;
+    printf("fmag def\n");
     for (m=0;m<CAMERA_WIDTH;m++) {
+    printf("cx out %d\n", cx_out_col[m].r);
     F_mag_col[m] = cx_out_col[m].r*cx_out_col[m].r + cx_out_col[m].i*cx_out_col[m].i;
+    printf("f mag col %d\n", F_mag_col[m]);
+    
     }
     
-    free(cfg);
     
-    kiss_fft( cfg , cx_in_row , cx_out_row ); 
+    printf("before free\n");
+    free(cfg2);
+    printf("after free\n");
+    
+    kiss_fft_cfg cfg3 = kiss_fft_alloc( CAMERA_WIDTH ,0 ,NULL, NULL );  
+    
+    kiss_fft( cfg3 , cx_in_row , cx_out_row ); 
+    printf("kiss2\n");
     double F_mag_row[SIGNAL_LENGTH] ;
     for (m=0;m<CAMERA_WIDTH;m++) {
     F_mag_row[m] = cx_out_row[m].r*cx_out_row[m].r + cx_out_row[m].i*cx_out_row[m].i;
+     //printf("f mag row %d\n", F_mag_col[m]);
     }
     
-    free(cfg);
-    
+    free(cfg3);
+
+
     /* Modify here: decide on your strategy and the direction to turn*/
     
-
+    bool peakStateCol = false;
+        int peakCountCol = 0;
+        
+        for (int m=0;m<SIGNAL_LENGTH;m++) {
+          if ((F_mag_col[m]>1000000)&&(peakStateCol == false)){
+            peakCountCol +=1;
+            peakStateCol = true;
+            } else {
+            peakStateCol = false;
+          }
+        }
     
-    decision = left;
-    decision = right;
-    decision = back;
-    decision = unclear;
+    bool peakStateRow = false;
+    int peakCountRow = 0;
+    
+    for (int m=0;m<SIGNAL_LENGTH;m++) {
+      if ((F_mag_row[m]>1000000)&&(peakStateRow == false)){
+        peakCountRow +=1;
+        peakStateRow = true;
+        } else {
+        peakStateRow = false;
+      }
+    }
+    
     /* Modify here: decide on your strategy and the direction to turn*/
-    enum analysisResult decision;
+   enum analysisResult decision;
+   if(peakCountCol>peakCountRow) {
+    enum analysisResult right;
+    }
     
-
-
-    return decision;
+    if(peakCountCol<peakCountRow) {
+    enum analysisResult left;
+    }
+    
+    if(peakCountCol==peakCountRow) {
+    enum analysisResult back;
+    }
+   
+    else {
+    printf("else\n");
+    enum analysisResult unclear;
+    }
+    
+  
+  return decision ;
+  
 } 
+
+
  
 void goForwardBehavior(){
   printf("Running behavior: goForwardBehavior\n");
   /* Modify here: go forward */
   while(wb_robot_step(TIME_STEP) != -1){
     // Based on above computation, compute the wheel speeds and make the robot move.
-    
     double left_speed = MAX_SPEED_WB/10;
     double right_speed = MAX_SPEED_WB/10;
-    
-    
     // Tip: You need to make sure that the wheel speeds do not exceed MAX_SPEED_WB
     wb_motor_set_velocity(left_motor, left_speed);
     wb_motor_set_velocity(right_motor, right_speed);
     /* Modify here: decide when to stop going forward and return to main loop*/
-    
-    //////Noticing an obstacle -> robot needs to take a picture and analyse it
-    
+    get_sensor_input();
     bool wall_detected = false;
-	//double distance = 0;
-	//int i,j;
-	
-	/// TODO: Implement detection of front wall
-	if(ps[0] > 1000 || ps[7] > 1000 ){
-		wall_detected = true;}
-	
-	if (!wall_detected){ // if no wall is detected we cannot update our position
-		return;}
-	
-	if(wall_detected) {
-	takeImageBehavior() ;}
-
+	//detection of front wall
+	//printf("total ps = %f\n", distance_sensors_values[0] +distance_sensors_values[7]);
+    if(distance_sensors_values[0] + distance_sensors_values[7] > 400 ){
+	printf("wall\n");	
+	wall_detected = true;
+    }	
+    if (!wall_detected){ // if no wall is detected we cannot update our position
+          printf("wall not detected\n");
+          return;
+    }
+    if(wall_detected) {
+    //  printf("oupsi\n");
+          takeImageBehavior() ;
+    }
   }
 } 
+
+
 
 void goBackwardsBehavior(){
   printf("Running behavior: goBackwardsBehavior\n");
@@ -261,10 +303,7 @@ void goBackwardsBehavior(){
      wb_motor_set_velocity(right_motor, right_speed);
 
   /* Modify here: decide when to stop going backwards and return to main loop */
-  
-  
-  
-
+    wb_robot_step(1000*TIME_STEP);
   }
 }
 
@@ -300,6 +339,18 @@ void turnRightBehavior(){
   }
 }
 
+void takeImageBehavior() {
+  printf("Running behavior: takeImageBehavior\n");
+   /* captures an image and stores it in 'signal_data'*/
+  const unsigned char* im = wb_camera_get_image(camera);
+  for (int m=0;m<CAMERA_WIDTH;m++) {
+    for (int n=0;n<CAMERA_HEIGHT;n++) {
+      signal_data[n][m]= wb_camera_image_get_grey(im,CAMERA_WIDTH,m,n); // convert from color to grey scale
+    }
+  }
+  
+  analyzePictureBehavior();
+}
         
   
     
@@ -316,11 +367,11 @@ int main(int argc, char **argv){
 
   // While loop
    while (wb_robot_step(TIME_STEP)!=-1){
-
+   //printf("main test\n");
     switch(nextBehavior){
       case goForward:
         goForwardBehavior();
-        nextBehavior = takePicture ;
+        nextBehavior = goForward ;
         break;
 
       case goBackwards:
@@ -374,6 +425,8 @@ int main(int argc, char **argv){
     }
         
   }
+        
+  
       
   wb_robot_cleanup();
   return 0;

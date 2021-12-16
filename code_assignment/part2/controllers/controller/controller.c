@@ -7,10 +7,10 @@
 #include <webots/keyboard.h>
 #include <webots/motor.h>
 
-// webots sensor libraries 
-#include <webots/accelerometer.h> 
+// webots sensor libraries
+#include <webots/accelerometer.h>
 #include <webots/compass.h>
-#include <webots/gps.h> 
+#include <webots/gps.h>
 #include <webots/position_sensor.h>
 #include <webots/distance_sensor.h>
 
@@ -26,7 +26,7 @@
 
 /*VERBOSE_FLAGS*/
 #define VERBOSE_COMPASS false   // Print compass values
-#define VERBOSE_ENC     false   // Print encoder values
+#define VERBOSE_ENC     true   // Print encoder values
 //-----------------------------------------------------------------------------------//
 
 /*MACRO*/
@@ -43,8 +43,8 @@
 #define INVALID 1000            // Arbitrary value to mark data as invalid
 
 /*CONSTANTES*/
-#define MAX_SPEED 1000          // Maximum speed 
-#define INC_SPEED 5             // Increment not expressed in webots 
+#define MAX_SPEED 1000          // Maximum speed
+#define INC_SPEED 5             // Increment not expressed in webots
 #define MAX_SPEED_WEB 6.28      // Maximum speed webots
 #define COMPASS_FREQ 1.0        // Compass measures at 1hz
 #define COMPASS_TIME_DIV floor(1.0/COMPASS_FREQ/((1e-3)*_robot.time_step)) // Update compass every COMPASS_TIME_DIV steps
@@ -55,15 +55,15 @@
 typedef struct
 {
   int time_step;
-  WbDeviceTag compass; 
+  WbDeviceTag compass;
   WbDeviceTag ps[NB_SENSORS];
   WbDeviceTag left_encoder;
   WbDeviceTag right_encoder;
-  WbDeviceTag left_motor; 
-  WbDeviceTag right_motor; 
+  WbDeviceTag left_motor;
+  WbDeviceTag right_motor;
 } simulation_t;
 
-typedef struct 
+typedef struct
 {
   int max_ds;
   double ds_values[NB_SENSORS];
@@ -87,7 +87,7 @@ static FILE *fp;
 /*FUNCTIONS DECLARATION*/
 
 static void constraint_heading(double* heading);
-static double IR_to_distance(double proximity); 
+static double IR_to_distance(double proximity);
 static void compute_position_from_wall_detection(pose_t robot_pose);
 
 static bool controller_init();
@@ -111,24 +111,24 @@ static bool controller_error(bool test, const char * message, int line, const ch
 
 //-----------------------------------------------------------------------------------//
 
-int main() 
+int main()
 {
 
   // initialize the webots controller library
   wb_robot_init();
-  
+
   if(CATCH_ERR(controller_init(), "Controller fails to init \n"))
     return 1;
 
-  // initialize the kalman filter 
+  // initialize the kalman filter
   kal_reset(_robot.time_step);
 
-  while (wb_robot_step(_robot.time_step) != -1) 
+  while (wb_robot_step(_robot.time_step) != -1)
   {
     // Get ground truth and encoders
     controller_get_ground_truth(false);
     controller_get_encoder();
-   
+
 		// Odometry
 		odo_compute_encoders(&_odo_enc, _meas.left_enc - _meas.prev_left_enc, _meas.right_enc - _meas.prev_right_enc);
     constraint_heading(&_odo_enc.heading);
@@ -137,7 +137,7 @@ int main()
     controller_get_distance();
     controller_get_compass();
     compute_position_from_wall_detection(_kalman); // use either {_ground_truth, _odo_enc, _kalman}
-    
+
     // Kalman filter prediction
     kal_compute_input_u(_meas.left_enc - _meas.prev_left_enc, _meas.right_enc - _meas.prev_right_enc);
     kal_predict(&_kalman);
@@ -153,11 +153,11 @@ int main()
       kal_update_heading(&_kalman,_meas.compass);
     }
     constraint_heading(&_kalman.heading);
-		
-		// Set the wheels' speed 
+
+		// Set the wheels' speed
 		controller_set_speed();
-	
-	  // Log the data 
+
+	  // Log the data
 	  controller_print_log(wb_robot_get_time());
   }
 
@@ -174,31 +174,31 @@ int main()
 //-----------------------------------------------------------------------------------//
 
 /**
- * @brief   Get the ground truth. The data retrieved here is comparable to what an MCS could provide. 
- *          The data returned is expressed in the frame A. 
- * @param init (bool) whether to set the initial pose with the acquired measurement. 
+ * @brief   Get the ground truth. The data retrieved here is comparable to what an MCS could provide.
+ *          The data returned is expressed in the frame A.
+ * @param init (bool) whether to set the initial pose with the acquired measurement.
  */
 void controller_get_ground_truth(bool init){
 
-  // Set the reference to the robot 
+  // Set the reference to the robot
   WbNodeRef ref = wb_supervisor_node_get_from_def(ROBOT_DEF);
 
-  // Get the robot orientation in the World frame 
-  const double* o = wb_supervisor_node_get_orientation(ref); 
+  // Get the robot orientation in the World frame
+  const double* o = wb_supervisor_node_get_orientation(ref);
   if(o != NULL){
 
-    // Assume pure rotation around world y-axis (NUE). 
+    // Assume pure rotation around world y-axis (NUE).
     // Use the x-projection of the 3D rotation matrix (1st column)
     // heading = atan2(cos,-sin)
     // Result in range ]-pi,pi]
     _ground_truth.heading = atan2(o[0],o[6]);
   }
 
-  // Get the robot position in the world frame  
+  // Get the robot position in the world frame
   const double* p = wb_supervisor_node_get_position(ref);
   if(p != NULL){
-    _ground_truth.x =  p[0];  // =  X in world frame 
-    _ground_truth.y = -p[2];  // = -Z in world frame 
+    _ground_truth.x =  p[0];  // =  X in world frame
+    _ground_truth.y = -p[2];  // = -Z in world frame
   }
 
   constraint_heading(&_ground_truth.heading);
@@ -206,21 +206,21 @@ void controller_get_ground_truth(bool init){
 
 /**
  * @brief   Constrain an angle within [-pi,pi]
- * 
+ *
  * @param heading value to constrain
  */
 void constraint_heading(double* heading){
   while(*heading > M_PI){
-    *heading -= 2.0*M_PI; 
+    *heading -= 2.0*M_PI;
   }
   while(*heading < -M_PI){
-    *heading += 2.0*M_PI; 
+    *heading += 2.0*M_PI;
   }
 }
 
 /**
  * @brief     Get the distance measurements.
- *            Return -1 if out of reach   
+ *            Return -1 if out of reach
  */
 void controller_get_distance(){
   // read sensor values
@@ -228,10 +228,10 @@ void controller_get_distance(){
   for (int i = 0; i < NB_SENSORS; i++){
 
     double value = wb_distance_sensor_get_value(_robot.ps[i]); // range: 0 (far) to 3800 (close)
-    _meas.ds_values[i] = value; 
+    _meas.ds_values[i] = value;
 
     // Identify sensor with highest response (shortest range)
-    if(_meas.ds_range[_meas.max_ds] < value) _meas.max_ds = i; 
+    if(_meas.ds_range[_meas.max_ds] < value) _meas.max_ds = i;
 
     // Convert into a range
     _meas.ds_range[i] = IR_to_distance(value);
@@ -239,70 +239,70 @@ void controller_get_distance(){
 }
 
 /**
- * @brief   Compute the position of the robot taking into 
+ * @brief   Compute the position of the robot taking into
  *          account its current pose 'robot_pose' and the
  *          current wall detection.
- * 
- * @param robot_pose (pose_t) pose to use as reference for the location of the robot 
+ *
+ * @param robot_pose (pose_t) pose to use as reference for the location of the robot
  */
 void compute_position_from_wall_detection(pose_t robot_pose){
 
-  // Update these values according to your detection 
-  _wall_detection.x = INVALID; 
-  _wall_detection.y = INVALID; 
-  _wall_detection.heading = INVALID; 
+  // Update these values according to your detection
+  _wall_detection.x = INVALID;
+  _wall_detection.y = INVALID;
+  _wall_detection.heading = INVALID;
   updated_axis = 'o';
 
-  /** 
-   * TODO: using the current robot pose: {robot_pose} and measurements: {_meas.ds_range, _meas.ds_values}, 
+  /**
+   * TODO: using the current robot pose: {robot_pose} and measurements: {_meas.ds_range, _meas.ds_values},
    * update the fields of the structure _wall_detection and set updated_axis to either 'x' or 'y',
-   * depending on the axis being updated. 
-   * 
-   * _wall_detection contains the assumed position of the robot in the arena where the wall detection occured. 
-   * It should therefore be set based on the current position of the robot in the arena (given by robot_pose), 
-   * and the acquired wall detection. 
-   * 
-   * If you decide not to include the current detection, leave the fields of _wall_detection to 
-   * their default values. 
+   * depending on the axis being updated.
+   *
+   * _wall_detection contains the assumed position of the robot in the arena where the wall detection occured.
+   * It should therefore be set based on the current position of the robot in the arena (given by robot_pose),
+   * and the acquired wall detection.
+   *
+   * If you decide not to include the current detection, leave the fields of _wall_detection to
+   * their default values.
    */
 
 
-  return; 
+  return;
 }
 
 /**
  * @brief   Get the compass measurments for heading of the robot.
- *          Thie methods returns INVALID if no data is available. 
+ *          Thie methods returns INVALID if no data is available.
  */
 void controller_get_compass(){
 
-  static int counter = -1; 
-  if(counter == -1) counter = COMPASS_TIME_DIV; 
+  static int counter = -1;
+  if(counter == -1) counter = COMPASS_TIME_DIV;
 
-  counter++; 
+  counter++;
 
   if(counter >= COMPASS_TIME_DIV){
-    
-    counter = 0; 
+
+    counter = 0;
 
     const double *c = wb_compass_get_values(_robot.compass);
     double x_align = c[0]; // x-axis alignment with North (x-axis in world) [-1,1]
     double z_align = c[2]; // z-axis alignment with North (x-axis in world) [-1,1]
-    
+
     // Make sure data is within [-1,1]
-    if(x_align > 1.0) x_align = 1.0; 
+    if(x_align > 1.0) x_align = 1.0;
     else if(x_align < -1.0) x_align = -1.0;
-    if(z_align > 1.0) z_align = 1.0; 
-    else if(z_align < -1.0) z_align = -1.0; 
+    if(z_align > 1.0) z_align = 1.0;
+    else if(z_align < -1.0) z_align = -1.0;
 
     _meas.compass = ( (x_align>=0 && z_align>=0) || (x_align<0 && z_align>0) ) ? acos(x_align) : -acos(x_align);
 
     constraint_heading(&_meas.compass);
-  } 
-  else{
-     _meas.compass = INVALID; // no new data available 
   }
-  
+  else{
+     _meas.compass = INVALID; // no new data available
+  }
+
   if(VERBOSE_COMPASS)
     printf("ROBOT compass is at angle (deg): %.3lf\n",RAD2DEG(_meas.compass));
 }
@@ -319,7 +319,7 @@ void controller_get_encoder()
 
   // Store previous value of the right encoder
   _meas.prev_right_enc = _meas.right_enc;
-  
+
   _meas.right_enc = wb_position_sensor_get_value(_robot.right_encoder);
 
   if(VERBOSE_ENC)
@@ -331,10 +331,10 @@ void controller_get_encoder()
  */
 void controller_set_speed()
 {
-  // Get the simulation current time 
-  double time = wb_robot_get_time(); 
+  // Get the simulation current time
+  double time = wb_robot_get_time();
 
-  // Init speed commands 
+  // Init speed commands
   double speed_left  = 0.0;
   double speed_right = 0.0;
 
@@ -373,8 +373,8 @@ void controller_print_log(double time)
   if( fp != NULL)
   {
     // fprintf(fp, "%g; %g; %g; %g; %g; %g; %g; %g; %g; %g; %g; %g; %g; %g; %g; %g; %g; %g\n",
-    //         time, _pose.x, _pose.y , _pose.heading, _meas.gps[0], _meas.gps[1], 
-    //   _meas.gps[2], _meas.acc[0], _meas.acc[1], _meas.acc[2], _meas.right_enc, _meas.left_enc, 
+    //         time, _pose.x, _pose.y , _pose.heading, _meas.gps[0], _meas.gps[1],
+    //   _meas.gps[2], _meas.acc[0], _meas.acc[1], _meas.acc[2], _meas.right_enc, _meas.left_enc,
     //   _odo_acc.x, _odo_acc.y, _odo_acc.heading, _odo_enc.x, _odo_enc.y, _odo_enc.heading);
 
       // _meas, _ground_truth, _odo_enc
@@ -396,7 +396,7 @@ void controller_print_log(double time)
 /*INIT*/
 
 /**
- * @brief      Run the initialization. Set the variables and structure to 0. Try to initialize the Webots components. 
+ * @brief      Run the initialization. Set the variables and structure to 0. Try to initialize the Webots components.
  *
  * @return     Return true if it rise and error
  */
@@ -410,7 +410,7 @@ bool controller_init()
   memset(&_meas, 0 , sizeof(measurement_t));
 
   memset(&_ground_truth, 0 , sizeof(pose_t));
-  
+
   memset(&_odo_enc, 0 , sizeof(pose_t));
 
   memset(&_kalman, 0 , sizeof(pose_t));
@@ -422,7 +422,7 @@ bool controller_init()
   controller_get_ground_truth(true);
 
   CATCH(err,controller_init_distance_sensors());
-  
+
   CATCH(err,controller_init_compass());
 
   CATCH(err,controller_init_encoder());
@@ -430,7 +430,7 @@ bool controller_init()
   CATCH(err,controller_init_motors());
 
   CATCH(err, controller_init_log("data.csv"));
-  
+
   wb_keyboard_enable(_robot.time_step);
 
   odo_reset(_robot.time_step);
@@ -445,7 +445,7 @@ bool controller_init()
  */
 bool controller_init_distance_sensors(){
 
-  bool err = false; 
+  bool err = false;
   // get and enable each distance sensor
   char name[] = "ps0";
   for(int i = 0; i < NB_SENSORS; i++) {
@@ -456,14 +456,14 @@ bool controller_init_distance_sensors(){
 
     if( !err ){
       // TODO: enable the distance sensors (use _robot.ps[i] and _robot.time_step)
-      
+      wb_distance_sensor_enable(_robot.ps[i],_robot.time_step);
     }
     else
-      return err; 
-    
+      return err;
+
     name[2]++; // increase the device name to "ps1", "ps2", etc.
   }
-  return err; 
+  return err;
 }
 
 /**
@@ -479,7 +479,7 @@ bool controller_init_compass(){
   if( !err )
   {
     // TODO: Enable the sensor on Webots (use _robot.compass and _robot.time_step)
-    
+    wb_compass_enable(_robot.compass, _robot.time_step);
   }
 
   return err;
@@ -500,11 +500,12 @@ bool controller_init_encoder()
   _robot.right_encoder = wb_robot_get_device("right wheel sensor");
 
   CATCH(err,CATCH_ERR(_robot.right_encoder == 0, "No right wheel sensor node found in the current robot file\n"));
-  
+
   if( !err ) // if no error initialize the sensors
   {
     // TODO: enable both left and right encoders (use _robot.left_encoder, _robot.right_encoder and _robot.time_step)
-
+    wb_position_sensor_enable(_robot.left_encoder,  _robot.time_step);
+    wb_position_sensor_enable(_robot.right_encoder, _robot.time_step);
   }
 
   return err;
@@ -527,7 +528,7 @@ bool controller_init_motors()
   _robot.right_motor = wb_robot_get_device("right wheel motor");
 
   CATCH(err,CATCH_ERR(_robot.left_motor == 0, "No right wheel motor node found in the current robot file\n"));
-  
+
   if( !err )
   {
     wb_motor_set_position(_robot.left_motor, INFINITY);   // To Do : Set the left motor position to INFINITY.    Note : use _robot.left_motor
@@ -564,7 +565,7 @@ bool controller_init_log(const char* filename)
 {
 
   fp = fopen(filename,"w");
-  
+
   bool err = CATCH_ERR(fp == NULL, "Fails to create a log file\n");
 
   if( !err )
@@ -586,7 +587,7 @@ bool controller_init_log(const char* filename)
  */
 bool controller_error(bool test, const char * message, int line, const char * fileName)
 {
-  if (test) 
+  if (test)
   {
     char buffer[256];
 
@@ -604,10 +605,10 @@ bool controller_error(bool test, const char * message, int line, const char * fi
 /*--------------------------------UTILS---------------------------------------*/
 
 /**
- * @brief   Convert the distance sensor value to a range 
- * 
+ * @brief   Convert the distance sensor value to a range
+ *
  * @param   proximity (double) proximity value
- * 
+ *
  * @return (double) corresponding range (-1 if out of range)
  */
 double IR_to_distance(double proximity){
@@ -628,7 +629,7 @@ double IR_to_distance(double proximity){
     if (proximity > 4094) {
         return 0.0;
     }
-	
+
     int a_index, b_index;
     double x_a , x_b ;
     double y_a , y_b ;

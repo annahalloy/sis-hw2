@@ -24,7 +24,7 @@ plot([-1,1,1,-1,-1]*0.5,[-1,-1,1,1,-1]*0.5,'-','Color',[0.2,0.2,0.2])
 title('Trajectory')
 xlabel('x [m]')
 ylabel('y [m]')
-legend({'start','ground truth','odometry'})
+legend({'start','ground truth','odometry'}, 'Location', 'EastOutside')
 
 % Plot heading 
 subplot(2,1,2)

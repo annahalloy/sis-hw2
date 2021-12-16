@@ -1,7 +1,7 @@
 function [sigma] = odometry_variance(x,x_hat,var,unit)
 
 % TODO: Compute the error between estimation x_hat and ground truth x
-error = ... 
+error = x_hat - x;
 
 if strcmp(var, 'heading')
     index = abs(error) < pi;
@@ -13,10 +13,10 @@ ind = ~isnan(error);
 error = error(ind);
 
 % TODO: Compute the standard deviation of the error 
-sigma = ...
+sigma = std(error);
 
 % TODO: Remove the mean from the error (for histogram)
-error_centered = ...
+error_centered = error - mean(error);
 
 % Plot the data 
 figure('Name','Noise odometry');

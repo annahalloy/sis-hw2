@@ -5,6 +5,7 @@ function [error, metric] = metric_scalar(x,x_hat)
     % output: 
     %   error: (1D array) element wise absolute difference between ground truth and estimate
     %   metric:(scalar) metric evaluation of the error 
-    error = ...
-    metric = ...
+    error = abs(x-x_hat);
+    deltaN = length(error)- (1:length(error));
+    metric = error./deltaN;
 end

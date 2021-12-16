@@ -10,10 +10,10 @@ index = ds_id == sensor_id;
 distances = ds_range(index);
 
 % TODO: Remove invalid data (=-1) from the 'distances' array  
-distances = ...
+distances = distances(distances ~= -1);
 
 % TODO: Compute the standard deviation of distances
-sigma = ...
+sigma = std(distances);
 
 
 figure('Name','DistanceSensor');

@@ -7,13 +7,13 @@ compass = compass(ind);
 ground_truth = ground_truth(ind);
 
 % TODO: Deduce ground_truth from compass 
-compass_error = ...
+compass_error = compass-ground_truth;
 
 % TODO: Remove excessive errors (> pi) from compass_error due to angle wind-up 
-compass_error = ...
+compass_error = compass_error(compass_error < pi);
 
 % TODO: Compute the standard deviation of compass_error  
-sigma = ...
+sigma = std(compass_error);
 
 % Plot the data 
 figure('Name','Compass');

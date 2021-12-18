@@ -26,7 +26,7 @@
 
 /*VERBOSE_FLAGS*/
 #define VERBOSE_COMPASS false   // Print compass values
-#define VERBOSE_ENC     true   // Print encoder values
+#define VERBOSE_ENC     false   // Print encoder values
 //-----------------------------------------------------------------------------------//
 
 /*MACRO*/
@@ -129,14 +129,14 @@ int main()
     controller_get_ground_truth(false);
     controller_get_encoder();
 
-		// Odometry
-		odo_compute_encoders(&_odo_enc, _meas.left_enc - _meas.prev_left_enc, _meas.right_enc - _meas.prev_right_enc);
+    // Odometry
+    odo_compute_encoders(&_odo_enc, _meas.left_enc - _meas.prev_left_enc, _meas.right_enc - _meas.prev_right_enc);
     constraint_heading(&_odo_enc.heading);
 
     // Measurements
     controller_get_distance();
     controller_get_compass();
-    compute_position_from_wall_detection(_kalman); // use either {_ground_truth, _odo_enc, _kalman}
+    compute_position_from_wall_detection(_ground_truth); // use either {_ground_truth, _odo_enc, _kalman}
 
     // Kalman filter prediction
     kal_compute_input_u(_meas.left_enc - _meas.prev_left_enc, _meas.right_enc - _meas.prev_right_enc);
@@ -266,6 +266,30 @@ void compute_position_from_wall_detection(pose_t robot_pose){
    * their default values.
    */
 
+    double dist_wall = _meas.ds_range[_meas.max_ds];
+    
+    printf("Wall dist  %f, %f, %f, %f\n", _meas.ds_range[0], _meas.ds_range[1], _meas.ds_range[6],_meas.ds_range[7]);
+    
+    if (dist_wall > 0){
+
+      double dsx = abs(0.5-robot_pose.x);
+      double dsy = abs(0.5-robot_pose.y);
+      if(dsx < dsy){
+        updated_axis = 'x';
+        if(robot_pose.x > 0){
+          _wall_detection.x = 0.47 - dist_wall;
+        } else {
+          _wall_detection.x = -0.47 - dist_wall;
+        }
+      } else {
+        updated_axis = 'y';
+        if(robot_pose.y > 0){
+           _wall_detection.y = 0.47 - dist_wall;
+        } else {
+          _wall_detection.y = -0.47 - dist_wall;
+        }
+      }
+    }
 
   return;
 }

@@ -136,7 +136,7 @@ int main()
     // Measurements
     controller_get_distance();
     controller_get_compass();
-    compute_position_from_wall_detection(_ground_truth); // use either {_ground_truth, _odo_enc, _kalman}
+    compute_position_from_wall_detection(_kalman); // use either {_ground_truth, _odo_enc, _kalman}
 
     // Kalman filter prediction
     kal_compute_input_u(_meas.left_enc - _meas.prev_left_enc, _meas.right_enc - _meas.prev_right_enc);
@@ -231,9 +231,9 @@ void controller_get_distance(){
     _meas.ds_values[i] = value;
 
     // Identify sensor with highest response (shortest range)
-    if(_meas.ds_range[_meas.max_ds] < value) _meas.max_ds = i;
+    if(_meas.ds_values[_meas.max_ds] < value) _meas.max_ds = i;
 
-    // Convert into a range
+    //convert to range
     _meas.ds_range[i] = IR_to_distance(value);
   }
 }
@@ -267,26 +267,30 @@ void compute_position_from_wall_detection(pose_t robot_pose){
    */
 
     double dist_wall = _meas.ds_range[_meas.max_ds];
-    
-    printf("Wall dist  %f, %f, %f, %f\n", _meas.ds_range[0], _meas.ds_range[1], _meas.ds_range[6],_meas.ds_range[7]);
-    
-    if (dist_wall > 0){
 
-      double dsx = abs(0.5-robot_pose.x);
-      double dsy = abs(0.5-robot_pose.y);
+    if ((dist_wall < 0.04) && (dist_wall > 0)){
+      //printf("Wall detected --- dist  %f, %f, %f, %f\n", _meas.ds_range[0], _meas.ds_range[1], _meas.ds_range[6],_meas.ds_range[7]);
+      double dsx = fabs(0.5-fabs(robot_pose.x));
+      double dsy = fabs(0.5-fabs(robot_pose.y));
+      printf("Wall detected with %f and %f\n", robot_pose.x, robot_pose.y);
       if(dsx < dsy){
+      printf("Wall in x\n");
         updated_axis = 'x';
+        _wall_detection.y = robot_pose.y;
         if(robot_pose.x > 0){
           _wall_detection.x = 0.47 - dist_wall;
         } else {
-          _wall_detection.x = -0.47 - dist_wall;
+          _wall_detection.x = -0.47 + dist_wall;
         }
+
       } else {
+        printf("Wall in y\n");
         updated_axis = 'y';
+        _wall_detection.x = robot_pose.x;
         if(robot_pose.y > 0){
            _wall_detection.y = 0.47 - dist_wall;
         } else {
-          _wall_detection.y = -0.47 - dist_wall;
+          _wall_detection.y = -0.47 + dist_wall;
         }
       }
     }

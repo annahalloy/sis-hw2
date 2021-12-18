@@ -143,13 +143,13 @@ scatter(data.gt_x(end-1),data.gt_y(end-1),'blue','x','LineWidth',1.5)
 title('Wall detections')
 xlabel('x [m]')
 ylabel('y [m]')
-legend({'start','ground truth','wall detections'}) % 'odometry',
+legend({'start','ground truth','wall detections'}, 'Location', 'EastOutside') % 'odometry',
 
 %% Part H: Plot the Kalman filter trajectory
 
 [~,~,~,data] = read_log();
 
-figure('Name','Trajectory', 'Position',[1000 200 800 1000]); % x y width height
+figure('Name','Trajectory', 'Position',[500 100 800 800]); % x y width height
 
 % Plot trajectory
 subplot(2,1,1)

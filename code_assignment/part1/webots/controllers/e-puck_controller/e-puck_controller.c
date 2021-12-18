@@ -33,7 +33,8 @@ WbDeviceTag camera; // handler for the camera device
 
 
 // enum used to transmit the decision of the image analysis
-enum analysisResult {left, back, right, unclear};
+enum analysisResult {left, back, right, unclear} decision;
+enum analysisResult decision;
 // enum and global variable used to store the next behavior
 enum basicBehaviors {goForward, turnLeft, turnRight, turnAround, goBackwards, takePicture, analyzePicture} nextBehavior;
 
@@ -65,7 +66,7 @@ void init() {
   printf("Camera width  = %d, height = %d \n", camera_width, camera_height);
   if (camera_width != CAMERA_WIDTH || camera_height != CAMERA_HEIGHT) {
     printf("Camera width/height is not defined correctly with #define. Correct values are printed above. Please set them correctly \n");
-    return (-1);
+    //return (-1);
   }
   
   // Distance sensor
@@ -104,12 +105,14 @@ void get_sensor_input() {
 
 enum analysisResult analyzePictureBehavior(){
   printf("Runninsignal_data[n][m] = g behavior: analyzePictureBehavior\n");
-
+    
+    
      /* fft variables */  
-    kiss_fft_cfg cfg = kiss_fft_alloc( SIGNAL_LENGTH ,0 ,NULL, NULL );  
-    kiss_fft_cpx cx_in_example[SIGNAL_LENGTH], cx_out_example[SIGNAL_LENGTH];
-    kiss_fft_cpx cx_in_col[SIGNAL_LENGTH], cx_out_col[SIGNAL_LENGTH];
-    kiss_fft_cpx cx_in_row[SIGNAL_LENGTH], cx_out_row[SIGNAL_LENGTH];
+//    kiss_fft_cfg cfg = kiss_fft_alloc( SIGNAL_LENGTH ,0 ,NULL, NULL );
+//    kiss_fft_cpx cx_in_example[SIGNAL_LENGTH], cx_out_example[SIGNAL_LENGTH];
+    kiss_fft_cpx cx_in_col[CAMERA_HEIGHT], cx_out_col[CAMERA_HEIGHT];
+    kiss_fft_cpx cx_in_row[CAMERA_WIDTH], cx_out_row[CAMERA_WIDTH];
+
     
     /* loop variables */
     int n, m;
@@ -117,91 +120,87 @@ enum analysisResult analyzePictureBehavior(){
 
     /* fft usage example */
     // prepare input
-    for (m=0;m<SIGNAL_LENGTH;m++) {
-      cx_in_example[m].r = 0.;
-      cx_in_example[m].i = 0.;
-    }
-    // add signal in the 'in' structure of the kiss_fft
-    for (m=0;m<CAMERA_WIDTH;m++) {
-      cx_in_example[m].r = signal_data[n][m];
-    }
+//    for (m=0;m<SIGNAL_LENGTH;m++) {
+//      cx_in_example[m].r = 0.;
+//      cx_in_example[m].i = 0.;
+//    }
+//    // add signal in the 'in' structure of the kiss_fft
+//    for (m=0;m<CAMERA_WIDTH;m++) {
+//      cx_in_example[m].r = signal_data[n][m];
+//    }
     // run fft
    
-    kiss_fft( cfg , cx_in_example , cx_out_example ); 
-    printf("cx in ex %d, cx out ex %d \n", cx_in_example[m].r, cx_out_example[m].r);
-    // Example on how to write the result to a file
-    FILE *fp;
-    fp =fopen("fft_wb.txt","w+");
-    for(m = 0; m < SIGNAL_LENGTH ; m++) { 
-        fprintf(fp,"%d,%f \n",m,cx_out_example[m].r);
-    }  
-    fclose(fp);
-
-    // free fft memory
-    free(cfg);
+//    kiss_fft( cfg , cx_in_example , cx_out_example );
+//    printf("cx in ex %d, cx out ex %d \n", cx_in_example[m].r, cx_out_example[m].r);
+//    // Example on how to write the result to a file
+//    FILE *fp;
+//    fp =fopen("fft_wb.txt","w+");
+//    for(m = 0; m < SIGNAL_LENGTH ; m++) {
+//        fprintf(fp,"%d,%f \n",m,cx_out_example[m].r);
+//    }
+//    fclose(fp);
+//
+//    printf("second %d\n", signal_data[8][0]);
+//
+//    // free fft memory
+//    free(cfg);
   
     /* Modify here: calculate average of signal (image) */
-    long int sum=0;
-    double mean=0;
+//    long int sum=0;
+//    double mean=0;
     
     
-
-    /* prepare the signal variables */
-    for (m=0;m<SIGNAL_LENGTH;m++) {
-      cx_in_col[m].r = 0.;
-      cx_in_col[m].i = 0.;
-      cx_in_row[m].r = 0.;
-      cx_in_row[m].i = 0.;
-    }
-
-
+//    for (int m=0;m<CAMERA_WIDTH;m++) {
+//        cx_in_row[m].r = 0.;
+//        cx_in_row[m].i = 0.;
+//    }
+//
+//
+//    for (int n=0;n<CAMERA_HEIGHT;n++) {
+//        cx_in_col[n].r = 0.;
+//        cx_in_col[n].i = 0.;
+//    }
+//
     /* Modify here: do some fft preparation magic here */
-
-    
+  
     print_camera_gray_image();
     
-         
     for (int m=0;m<CAMERA_WIDTH;m++) {
-          cx_in_row[m].r = signal_data[8][m];
-          printf("m %d row.r %d, row.i %d, data %d \n",m, cx_in_row[m].r, cx_in_row[m].i, signal_data[8][m]);
+        cx_in_row[m].r = 1.*signal_data[8][m];
+        cx_in_row[m].i = 0.;
     }
           
     for (int n=0; n<CAMERA_HEIGHT; n++) {
-        cx_in_col[n].r = signal_data[n][8]; 
-        printf("m %d col.r %d, col.i %d, data %d\n",n, cx_in_col[m].r ,cx_in_col[m].i, signal_data[8][m]);
+        cx_in_col[n].r = 1.*signal_data[n][8];
+        cx_in_col[n].i = 0.;
     }
-   
-    
     
     /* Modify here: perform the fft using kiss_fft() and free() as in example above*/
           
-    kiss_fft_cfg cfg2 = kiss_fft_alloc( CAMERA_WIDTH ,0 ,NULL, NULL );  
+    kiss_fft_cfg cfg2 = kiss_fft_alloc( CAMERA_HEIGHT ,0 ,NULL, NULL );  
     
     kiss_fft( cfg2 , cx_in_col , cx_out_col ); 
-    //printf("kiss\n");
-    
-    double F_mag_col[CAMERA_WIDTH] ;
-    printf("fmag def\n");
-    for (m=0;m<CAMERA_WIDTH;m++) {
-    printf("cx out %d\n", cx_out_col[m].r);
-    F_mag_col[m] = cx_out_col[m].r*cx_out_col[m].r + cx_out_col[m].i*cx_out_col[m].i;
-    printf("f mag col %d\n", F_mag_col[m]);
-    
+   
+    double F_mag_col[CAMERA_HEIGHT] ;
+
+    for (n=0;n<CAMERA_HEIGHT;n++) {
+    //printf("cx out %f\n", cx_out_col[m].r*cx_out_col[m].r);
+    F_mag_col[n] = cx_out_col[n].r*cx_out_col[n].r + cx_out_col[n].i*cx_out_col[n].i;
+    printf("f mag col %f\n", F_mag_col[n]);
     }
     
-    
-    printf("before free\n");
     free(cfg2);
-    printf("after free\n");
     
     kiss_fft_cfg cfg3 = kiss_fft_alloc( CAMERA_WIDTH ,0 ,NULL, NULL );  
     
-    kiss_fft( cfg3 , cx_in_row , cx_out_row ); 
-    printf("kiss2\n");
-    double F_mag_row[SIGNAL_LENGTH] ;
+    kiss_fft( cfg3 , cx_in_row , cx_out_row );
+   
+    double F_mag_row[CAMERA_WIDTH] ;
+    
     for (m=0;m<CAMERA_WIDTH;m++) {
-    F_mag_row[m] = cx_out_row[m].r*cx_out_row[m].r + cx_out_row[m].i*cx_out_row[m].i;
-     //printf("f mag row %d\n", F_mag_col[m]);
+        //printf("cx row out %f\n", cx_out_row[m].r);
+        F_mag_row[m] = cx_out_row[m].r*cx_out_row[m].r + cx_out_row[m].i*cx_out_row[m].i;
+        printf("f mag row %f\n", F_mag_row[m]);
     }
     
     free(cfg3);
@@ -212,52 +211,75 @@ enum analysisResult analyzePictureBehavior(){
     bool peakStateCol = false;
         int peakCountCol = 0;
         
-        for (int m=0;m<SIGNAL_LENGTH;m++) {
-          if ((F_mag_col[m]>1000000)&&(peakStateCol == false)){
+        for (int m=0;m<CAMERA_WIDTH;m++) {
+          if ((F_mag_col[m]>10000)&&(peakStateCol == false)){
             peakCountCol +=1;
             peakStateCol = true;
             } else {
             peakStateCol = false;
           }
         }
+    printf("peaks col  = %i \n",peakCountCol);
     
     bool peakStateRow = false;
     int peakCountRow = 0;
     
-    for (int m=0;m<SIGNAL_LENGTH;m++) {
-      if ((F_mag_row[m]>1000000)&&(peakStateRow == false)){
+    for (int m=0;m<CAMERA_HEIGHT;m++) {
+      if ((F_mag_row[m]>10000)&&(peakStateRow == false)){
         peakCountRow +=1;
         peakStateRow = true;
         } else {
         peakStateRow = false;
       }
     }
+    printf("peaks row  = %i \n",peakCountRow);
     
     /* Modify here: decide on your strategy and the direction to turn*/
-   enum analysisResult decision;
-   if(peakCountCol>peakCountRow) {
-    enum analysisResult right;
+   
+    
+    if(peakCountCol>peakCountRow) {
+        printf("right\n");
+        //decision = right;
+        enum analysisResult {right};
+        
     }
     
-    if(peakCountCol<peakCountRow) {
-    enum analysisResult left;
+    else if(peakCountCol<peakCountRow) {
+        enum analysisResult {left};
+        printf("left\n");
     }
     
-    if(peakCountCol==peakCountRow) {
-    enum analysisResult back;
+    else if(peakCountCol==peakCountRow) {
+        enum analysisResult {back};
+        printf("back\n");
     }
    
     else {
-    printf("else\n");
-    enum analysisResult unclear;
+        printf("else, %i \n",peakCountCol-peakCountRow);
+        enum analysisResult {unclear};
     }
-    
-  
-  return decision ;
-  
+
+    printf("decision 1\n");
+    return decision;
+    printf("decision 2\n");
 } 
 
-
+void takeImageBehavior() {
+  printf("Running behavior: takeImageBehavior\n");
+   /* captures an image and stores it in 'signal_data'*/
+  const unsigned char* im = wb_camera_get_image(camera);
+  for (int m=0;m<CAMERA_WIDTH;m++) {
+    for (int n=0;n<CAMERA_HEIGHT;n++) {
+      signal_data[n][m]= wb_camera_image_get_grey(im,CAMERA_WIDTH,m,n); // convert from color to grey scale
+        if (n==0 && m==0){
+            printf("takeImage %d\n", signal_data[n][m]);
+        }
+    }
+  }
+  
+ analyzePictureBehavior();
+}
+  
  
 void goForwardBehavior(){
   printf("Running behavior: goForwardBehavior\n");
@@ -275,11 +297,11 @@ void goForwardBehavior(){
 	//detection of front wall
 	//printf("total ps = %f\n", distance_sensors_values[0] +distance_sensors_values[7]);
     if(distance_sensors_values[0] + distance_sensors_values[7] > 400 ){
-	printf("wall\n");	
+//	printf("wall\n");
 	wall_detected = true;
     }	
     if (!wall_detected){ // if no wall is detected we cannot update our position
-          printf("wall not detected\n");
+//          printf("wall not detected\n");
           return;
     }
     if(wall_detected) {
@@ -312,8 +334,8 @@ void turnLeftBehavior(){
   /* Modify here: turn left */
   while(wb_robot_step(TIME_STEP) != -1){
      // Based on above computation, compute the wheel speeds and make the robot move.
-     double left_speed = 0;
-     double right_speed = 0;
+      double left_speed =  MAX_SPEED_WB/5;
+      double right_speed = - MAX_SPEED_WB/5;
      // Tip: You need to make sure that the wheel speeds do not exceed MAX_SPEED_WB
      wb_motor_set_velocity(left_motor, left_speed);
      wb_motor_set_velocity(right_motor, right_speed);
@@ -328,8 +350,8 @@ void turnRightBehavior(){
   /* Modify here: turn right */
   while(wb_robot_step(TIME_STEP) != -1){
      // Based on above computation, compute the wheel speeds and make the robot move.
-     double left_speed = 0;
-     double right_speed = 0;
+      double left_speed = - MAX_SPEED_WB/5;
+      double right_speed = MAX_SPEED_WB/5;
      // Tip: You need to make sure that the wheel speeds do not exceed MAX_SPEED_WB
      wb_motor_set_velocity(left_motor, left_speed);
      wb_motor_set_velocity(right_motor, right_speed);
@@ -339,19 +361,7 @@ void turnRightBehavior(){
   }
 }
 
-void takeImageBehavior() {
-  printf("Running behavior: takeImageBehavior\n");
-   /* captures an image and stores it in 'signal_data'*/
-  const unsigned char* im = wb_camera_get_image(camera);
-  for (int m=0;m<CAMERA_WIDTH;m++) {
-    for (int n=0;n<CAMERA_HEIGHT;n++) {
-      signal_data[n][m]= wb_camera_image_get_grey(im,CAMERA_WIDTH,m,n); // convert from color to grey scale
-    }
-  }
-  
-  analyzePictureBehavior();
-}
-        
+      
   
     
 
@@ -391,17 +401,19 @@ int main(int argc, char **argv){
 
       case takePicture:
         takeImageBehavior();
-        nextBehavior = analyzePicture; ///
+       // nextBehavior = analyzePicture;
         break;
 
       case analyzePicture: ; // ';' is necessary in a switch case if you follow case by a declaration
         enum analysisResult res;
         res = analyzePictureBehavior();
+            printf("we are here\n");
         switch(res){
           case left:
             nextBehavior = turnLeft;
             break;
           case right:
+                printf("out of analyze\n");
             nextBehavior = turnRight;
             break;
           case back:

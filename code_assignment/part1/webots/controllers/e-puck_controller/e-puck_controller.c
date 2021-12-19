@@ -207,8 +207,8 @@ void goForwardBehavior(){
   /* Modify here: go forward */
   while(wb_robot_step(TIME_STEP) != -1){
     // Based on above computation, compute the wheel speeds and make the robot move.
-    double left_speed = MAX_SPEED_WB/10;
-    double right_speed = MAX_SPEED_WB/10;
+    double left_speed = MAX_SPEED_WB/5;
+    double right_speed = MAX_SPEED_WB/5;
     // Tip: You need to make sure that the wheel speeds do not exceed MAX_SPEED_WB
     wb_motor_set_velocity(left_motor, left_speed);
     wb_motor_set_velocity(right_motor, right_speed);
@@ -260,14 +260,14 @@ void turnLeftBehavior(){
     double count = 0;
   while(wb_robot_step(TIME_STEP) != -1){
      // Based on above computation, compute the wheel speeds and make the robot move.
-      double left_speed = - MAX_SPEED_WB/5;
-      double right_speed = MAX_SPEED_WB/5;
+      double left_speed = - MAX_SPEED_WB/10;
+      double right_speed = MAX_SPEED_WB/10;
      // Tip: You need to make sure that the wheel speeds do not exceed MAX_SPEED_WB
      wb_motor_set_velocity(left_motor, left_speed);
      wb_motor_set_velocity(right_motor, right_speed);
 
   /* Modify here: decide when to stop turning and return to main loop */
-      if (count == 26) {
+      if (count == 54) {
           break;
       }
       count ++;
@@ -281,14 +281,14 @@ void turnRightBehavior(){
 
   while(wb_robot_step(TIME_STEP) != -1){
      // Based on above computation, compute the wheel speeds and make the robot move.
-      double left_speed = MAX_SPEED_WB/5;
-      double right_speed = - MAX_SPEED_WB/5;
+      double left_speed = MAX_SPEED_WB/10;
+      double right_speed = - MAX_SPEED_WB/10;
      // Tip: You need to make sure that the wheel speeds do not exceed MAX_SPEED_WB
      wb_motor_set_velocity(left_motor, left_speed);
      wb_motor_set_velocity(right_motor, right_speed);
 
   /*  when to stop turning and return to main loop */
-      if (count == 26) {
+      if (count == 54) {
           break;
       }
       count ++;
@@ -357,8 +357,8 @@ int main(int argc, char **argv){
         break;
 
       case turnAround:
-        turnLeftBehavior();
-        turnLeftBehavior();
+        turnRightBehavior();
+        turnRightBehavior();
         nextBehavior = goForward;
         break;
 

@@ -7,7 +7,12 @@ clear all
 close all
 
 %% Load image - Question 2.1
-image_name = 'images/example_image.jpg';
+%image_name = 'images/example_image.jpg'; %horizontal stipes
+
+%uncomment following lines to analyse vertical stripes and black image
+%image_name = 'images/black.jpg'; % black image
+image_name = 'images/vertical2.jpg';
+
 
 % Read the image using imread
 data = imread(image_name);
@@ -40,10 +45,10 @@ plot(x_cols, Fmag_cols_plot)
 legend('rows', 'cols')
 grid on
 
-figure
-histogram(Fmag_rows_plot);
-hold on;
-histogram(Fmag_cols_plot);
+% figure
+% histogram(Fmag_rows_plot);
+% hold on;
+% histogram(Fmag_cols_plot);
 
 %% Analyze image - Question 2.2
 black=0; % should be toggled to 1 if black is detected

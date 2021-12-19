@@ -17,7 +17,8 @@ static double u[2][1] = {{0},
 						 {0}};
 
 // TODO: Define matrix A
-static const double A[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
+//static const double A[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
+							// since it's the identitx matrix here, we wil neglect it
 
 // TODO: Define the state covariance sigma (assume perfect knowledge of inital pose)
 static double sigma[3][3] = {{0,0,0},{0,0,0},{0,0,0}};
@@ -134,7 +135,6 @@ void kal_update(double z, double C[1][DIM], double Q){
 
 		double KZ[3][1];
 		double zi[1][1] = {{z}};
-		printf("zi = %f\n", zi[0][0]);
 		multiply(3,1,K,1,1,zi,KZ);
 		add(3,1,mu,KZ,mu);
 

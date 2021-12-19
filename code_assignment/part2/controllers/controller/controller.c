@@ -27,6 +27,8 @@
 /*VERBOSE_FLAGS*/
 #define VERBOSE_COMPASS false   // Print compass values
 #define VERBOSE_ENC     false   // Print encoder values
+
+#define VERBOSE_WALL    false   // Print wall detections
 //-----------------------------------------------------------------------------------//
 
 /*MACRO*/
@@ -272,9 +274,10 @@ void compute_position_from_wall_detection(pose_t robot_pose){
       //printf("Wall detected --- dist  %f, %f, %f, %f\n", _meas.ds_range[0], _meas.ds_range[1], _meas.ds_range[6],_meas.ds_range[7]);
       double dsx = fabs(0.5-fabs(robot_pose.x));
       double dsy = fabs(0.5-fabs(robot_pose.y));
-      printf("Wall detected with %f and %f\n", robot_pose.x, robot_pose.y);
       if(dsx < dsy){
-      printf("Wall in x\n");
+        if (VERBOSE_WALL){
+        printf("Wall in x axis\n");
+      }
         updated_axis = 'x';
         _wall_detection.y = robot_pose.y;
         if(robot_pose.x > 0){
@@ -284,7 +287,9 @@ void compute_position_from_wall_detection(pose_t robot_pose){
         }
 
       } else {
-        printf("Wall in y\n");
+        if (VERBOSE_WALL){
+        printf("Wall in y axis \n");
+      }
         updated_axis = 'y';
         _wall_detection.x = robot_pose.x;
         if(robot_pose.y > 0){

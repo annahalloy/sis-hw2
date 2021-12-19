@@ -57,11 +57,6 @@ threshold = 1000000;
 h1 = (Fmag_rows_plot>threshold);
 h2 = (Fmag_cols_plot>threshold)';
 
-figure
-bar(h1)
-hold on
-bar(h2)
-
 hf1 = zeros([1,length(h1)]); %array of i+1 shifted
 hf1(2:length(h1)) = h1(1:length(h1)-1);
 dh1 = length(h1(abs(hf1-h1)>0))/2;

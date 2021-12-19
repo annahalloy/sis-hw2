@@ -33,7 +33,7 @@ WbDeviceTag camera; // handler for the camera device
 
 
 // enum used to transmit the decision of the image analysis
-enum analysisResult {left, back, right, unclear} decision;
+enum analysisResult {left, back, right, unclear};
 enum analysisResult decision;
 // enum and global variable used to store the next behavior
 enum basicBehaviors {goForward, turnLeft, turnRight, turnAround, goBackwards, takePicture, analyzePicture} nextBehavior;
@@ -105,107 +105,43 @@ void get_sensor_input() {
 
 enum analysisResult analyzePictureBehavior(){
   printf("Runninsignal_data[n][m] = g behavior: analyzePictureBehavior\n");
-    
-    
-     /* fft variables */  
-//    kiss_fft_cfg cfg = kiss_fft_alloc( SIGNAL_LENGTH ,0 ,NULL, NULL );
-//    kiss_fft_cpx cx_in_example[SIGNAL_LENGTH], cx_out_example[SIGNAL_LENGTH];
+     /* fft variables */
     kiss_fft_cpx cx_in_col[CAMERA_HEIGHT], cx_out_col[CAMERA_HEIGHT];
     kiss_fft_cpx cx_in_row[CAMERA_WIDTH], cx_out_row[CAMERA_WIDTH];
-
-    
-    /* loop variables */
-    int n, m;
-
-
-    /* fft usage example */
-    // prepare input
-//    for (m=0;m<SIGNAL_LENGTH;m++) {
-//      cx_in_example[m].r = 0.;
-//      cx_in_example[m].i = 0.;
-//    }
-//    // add signal in the 'in' structure of the kiss_fft
-//    for (m=0;m<CAMERA_WIDTH;m++) {
-//      cx_in_example[m].r = signal_data[n][m];
-//    }
-    // run fft
-   
-//    kiss_fft( cfg , cx_in_example , cx_out_example );
-//    printf("cx in ex %d, cx out ex %d \n", cx_in_example[m].r, cx_out_example[m].r);
-//    // Example on how to write the result to a file
-//    FILE *fp;
-//    fp =fopen("fft_wb.txt","w+");
-//    for(m = 0; m < SIGNAL_LENGTH ; m++) {
-//        fprintf(fp,"%d,%f \n",m,cx_out_example[m].r);
-//    }
-//    fclose(fp);
-//
-//    printf("second %d\n", signal_data[8][0]);
-//
-//    // free fft memory
-//    free(cfg);
-  
-    /* Modify here: calculate average of signal (image) */
-//    long int sum=0;
-//    double mean=0;
-    
-    
-//    for (int m=0;m<CAMERA_WIDTH;m++) {
-//        cx_in_row[m].r = 0.;
-//        cx_in_row[m].i = 0.;
-//    }
-//
-//
-//    for (int n=0;n<CAMERA_HEIGHT;n++) {
-//        cx_in_col[n].r = 0.;
-//        cx_in_col[n].i = 0.;
-//    }
-//
-    /* Modify here: do some fft preparation magic here */
-  
     print_camera_gray_image();
     
     for (int m=0;m<CAMERA_WIDTH;m++) {
         cx_in_row[m].r = 1.*signal_data[8][m];
         cx_in_row[m].i = 0.;
     }
-          
     for (int n=0; n<CAMERA_HEIGHT; n++) {
         cx_in_col[n].r = 1.*signal_data[n][8];
         cx_in_col[n].i = 0.;
     }
-    
     /* Modify here: perform the fft using kiss_fft() and free() as in example above*/
           
-    kiss_fft_cfg cfg2 = kiss_fft_alloc( CAMERA_HEIGHT ,0 ,NULL, NULL );  
-    
-    kiss_fft( cfg2 , cx_in_col , cx_out_col ); 
-   
+    kiss_fft_cfg cfg2 = kiss_fft_alloc( CAMERA_HEIGHT ,0 ,NULL, NULL );
+    kiss_fft( cfg2 , cx_in_col , cx_out_col );
     double F_mag_col[CAMERA_HEIGHT] ;
 
-    for (n=0;n<CAMERA_HEIGHT;n++) {
-    //printf("cx out %f\n", cx_out_col[m].r*cx_out_col[m].r);
+    for (int n=0;n<CAMERA_HEIGHT;n++) {
     F_mag_col[n] = cx_out_col[n].r*cx_out_col[n].r + cx_out_col[n].i*cx_out_col[n].i;
     printf("f mag col %f\n", F_mag_col[n]);
     }
     
     free(cfg2);
     
-    kiss_fft_cfg cfg3 = kiss_fft_alloc( CAMERA_WIDTH ,0 ,NULL, NULL );  
-    
+    kiss_fft_cfg cfg3 = kiss_fft_alloc( CAMERA_WIDTH ,0 ,NULL, NULL );
     kiss_fft( cfg3 , cx_in_row , cx_out_row );
-   
     double F_mag_row[CAMERA_WIDTH] ;
     
-    for (m=0;m<CAMERA_WIDTH;m++) {
-        //printf("cx row out %f\n", cx_out_row[m].r);
+    for (int m=0;m<CAMERA_WIDTH;m++) {
         F_mag_row[m] = cx_out_row[m].r*cx_out_row[m].r + cx_out_row[m].i*cx_out_row[m].i;
         printf("f mag row %f\n", F_mag_row[m]);
     }
     
     free(cfg3);
-
-
+    
     /* Modify here: decide on your strategy and the direction to turn*/
     
     bool peakStateCol = false;
@@ -233,36 +169,25 @@ enum analysisResult analyzePictureBehavior(){
       }
     }
     printf("peaks row  = %i \n",peakCountRow);
-    
     /* Modify here: decide on your strategy and the direction to turn*/
-   
-    
     if(peakCountCol>peakCountRow) {
         printf("right\n");
-        //decision = right;
-        enum analysisResult {right};
-        
+        return right ;
     }
-    
     else if(peakCountCol<peakCountRow) {
-        enum analysisResult {left};
+        return left ;
         printf("left\n");
     }
-    
     else if(peakCountCol==peakCountRow) {
-        enum analysisResult {back};
+        decision = back ;
         printf("back\n");
     }
-   
     else {
-        printf("else, %i \n",peakCountCol-peakCountRow);
-        enum analysisResult {unclear};
+        decision = unclear ;
     }
-
-    printf("decision 1\n");
     return decision;
-    printf("decision 2\n");
 } 
+
 
 void takeImageBehavior() {
   printf("Running behavior: takeImageBehavior\n");
@@ -271,13 +196,9 @@ void takeImageBehavior() {
   for (int m=0;m<CAMERA_WIDTH;m++) {
     for (int n=0;n<CAMERA_HEIGHT;n++) {
       signal_data[n][m]= wb_camera_image_get_grey(im,CAMERA_WIDTH,m,n); // convert from color to grey scale
-        if (n==0 && m==0){
-            printf("takeImage %d\n", signal_data[n][m]);
-        }
     }
   }
-  
- analyzePictureBehavior();
+   
 }
   
  
@@ -295,18 +216,15 @@ void goForwardBehavior(){
     get_sensor_input();
     bool wall_detected = false;
 	//detection of front wall
-	//printf("total ps = %f\n", distance_sensors_values[0] +distance_sensors_values[7]);
-    if(distance_sensors_values[0] + distance_sensors_values[7] > 400 ){
-//	printf("wall\n");
+    if(distance_sensors_values[0] + distance_sensors_values[7] > 200 ){
 	wall_detected = true;
     }	
-    if (!wall_detected){ // if no wall is detected we cannot update our position
-//          printf("wall not detected\n");
+    if (!wall_detected){
           return;
     }
     if(wall_detected) {
-    //  printf("oupsi\n");
-          takeImageBehavior() ;
+        nextBehavior = takePicture ;
+        return ;
     }
   }
 } 
@@ -316,38 +234,30 @@ void goForwardBehavior(){
 void goBackwardsBehavior(){
   printf("Running behavior: goBackwardsBehavior\n");
   /* Modify here: go backwards */
+    double count = 0 ;
+    
   while(wb_robot_step(TIME_STEP) != -1){
      // Based on above computation, compute the wheel speeds and make the robot move.
-    double left_speed = - MAX_SPEED_WB/10;
-    double right_speed = - MAX_SPEED_WB/10;
+    double left_speed = - MAX_SPEED_WB/5;
+    double right_speed = - MAX_SPEED_WB/5;
      // Tip: You need to make sure that the wheel speeds do not exceed MAX_SPEED_WB
      wb_motor_set_velocity(left_motor, left_speed);
      wb_motor_set_velocity(right_motor, right_speed);
 
   /* Modify here: decide when to stop going backwards and return to main loop */
-    wb_robot_step(1000*TIME_STEP);
+     
+      if (count == 10) {
+          break;
+      }
+      count ++;
+      
   }
 }
 
 void turnLeftBehavior(){
   printf("Running behavior: turnLeftBehavior\n");
   /* Modify here: turn left */
-  while(wb_robot_step(TIME_STEP) != -1){
-     // Based on above computation, compute the wheel speeds and make the robot move.
-      double left_speed =  MAX_SPEED_WB/5;
-      double right_speed = - MAX_SPEED_WB/5;
-     // Tip: You need to make sure that the wheel speeds do not exceed MAX_SPEED_WB
-     wb_motor_set_velocity(left_motor, left_speed);
-     wb_motor_set_velocity(right_motor, right_speed);
-
-  /* Modify here: decide when to stop turning and return to main loop */
-     
-  }
-}
-
-void turnRightBehavior(){
-  printf("Running behavior: turnRightBehavior\n");
-  /* Modify here: turn right */
+    double count = 0;
   while(wb_robot_step(TIME_STEP) != -1){
      // Based on above computation, compute the wheel speeds and make the robot move.
       double left_speed = - MAX_SPEED_WB/5;
@@ -357,13 +267,33 @@ void turnRightBehavior(){
      wb_motor_set_velocity(right_motor, right_speed);
 
   /* Modify here: decide when to stop turning and return to main loop */
-
+      if (count == 26) {
+          break;
+      }
+      count ++;
   }
 }
 
-      
-  
+void turnRightBehavior(){
+  printf("Running behavior: turnRightBehavior\n");
     
+    double count = 0;
+
+  while(wb_robot_step(TIME_STEP) != -1){
+     // Based on above computation, compute the wheel speeds and make the robot move.
+      double left_speed = MAX_SPEED_WB/5;
+      double right_speed = - MAX_SPEED_WB/5;
+     // Tip: You need to make sure that the wheel speeds do not exceed MAX_SPEED_WB
+     wb_motor_set_velocity(left_motor, left_speed);
+     wb_motor_set_velocity(right_motor, right_speed);
+
+  /*  when to stop turning and return to main loop */
+      if (count == 26) {
+          break;
+      }
+      count ++;
+  }
+}
 
 // ######################################################################
 // #### Main function
@@ -374,19 +304,18 @@ int main(int argc, char **argv){
   
   // set initial behavior
   nextBehavior = goForward;
-
   // While loop
    while (wb_robot_step(TIME_STEP)!=-1){
-   //printf("main test\n");
+   printf("next behavior %d\n", nextBehavior);
     switch(nextBehavior){
       case goForward:
-        goForwardBehavior();
         nextBehavior = goForward ;
+        goForwardBehavior();
         break;
 
       case goBackwards:
         goBackwardsBehavior();
-        nextBehavior = turnRight ;
+        nextBehavior = turnAround ;
         break;
 
       case turnLeft:
@@ -401,19 +330,21 @@ int main(int argc, char **argv){
 
       case takePicture:
         takeImageBehavior();
-       // nextBehavior = analyzePicture;
+        nextBehavior = analyzePicture;
         break;
 
-      case analyzePicture: ; // ';' is necessary in a switch case if you follow case by a declaration
+    
+        case analyzePicture: ; // ';' is necessary in a switch case if you follow case by a declaration
+        
         enum analysisResult res;
         res = analyzePictureBehavior();
-            printf("we are here\n");
+
+            
         switch(res){
           case left:
             nextBehavior = turnLeft;
             break;
           case right:
-                printf("out of analyze\n");
             nextBehavior = turnRight;
             break;
           case back:
@@ -428,7 +359,7 @@ int main(int argc, char **argv){
       case turnAround:
         turnLeftBehavior();
         turnLeftBehavior();
-        nextBehavior = goForward ; 
+        nextBehavior = goForward;
         break;
 
       default:
